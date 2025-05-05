@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8443:8443"
+    volumes:
+      - .:/app
+      - ./static/images:/app/static/images
+      - ./certs:/app/certs
+    environment:
+      - APP_HOST=https://localhost:8443
+      - API_BASE=http://localhost:11434/v1
+      - API_KEY=sk-not-needed
+      - SSL_CERT_PATH=/app/certs/cert.pem
+      - SSL_KEY_PATH=/app/certs/key.pem
+    command: uvicorn app:app --host 0.0.0.0 --port 8443 --ssl-keyfile /app/certs/key.pem --ssl-certfile /app/certs/cert.pem --reload
+    restart: unless-stopped
+    network_mode: "host"
+
+volumes:
+  vllm_data:
+    name: vllm_data 
