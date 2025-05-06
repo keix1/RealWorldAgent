@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-# システムパッケージのインストール（最小限）
+# システムパッケージのインストール
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libglib2.0-0 \
@@ -18,7 +18,9 @@ COPY . .
 
 # 画像保存ディレクトリの作成と権限設定
 RUN mkdir -p static/images && \
-    chmod -R 777 static/images
+    chmod -R 777 static/images && \
+    mkdir -p certs && \
+    chmod -R 777 certs
 
 # ポートの公開
 EXPOSE 8443
