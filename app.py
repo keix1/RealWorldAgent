@@ -197,18 +197,18 @@ async def websocket_endpoint(websocket: WebSocket):
                 base64_data = message["image"]
                 
                 # APIにリクエストを送信
-                prompt = """この写真を以下の基準で5段階評価してください：
-1. 笑顔の自然さ（1-5点）
-2. 構図の良さ（1-5点）
-3. プロフィール写真としての適切さ（1-5点）
+                prompt = """この写真を思い出アルバムに保存するべきかどうか、以下の基準で評価してください：
 
-各項目について具体的な理由を述べてください。
-最終的な総合評価（1-5点）と、その理由も含めて教えてください。
+1. 表情と雰囲気（1-5点）
+   - 笑顔や表情があるか
+   - 感情や楽しい雰囲気が伝わってくるか
+   - 表情が強ければ強いほど点数を高くする
 
-評価結果は以下の形式で返してください：
+最終的な総合評価（1-5点）と保存の判断理由を含めて回答してください。
+
+評価結果は以下の例のようなJSON形式で返してください。JSON形式以外は出力しないでください。：
 {
-  "good_picture": true/false,
-  "rate": 1-5,
+  "rate": 1,
   "reason": "具体的な評価理由"
 }"""
 
@@ -252,15 +252,10 @@ async def websocket_endpoint(websocket: WebSocket):
                             logger.error("APIからの応答が不正な形式です")
                             raise ValueError("APIからの応答が不正な形式です")
                         
-                        good_picture = response_json.get("good_picture", False)
                         rate = response_json.get("rate", 1)
                         reason = response_json.get("reason", "理由なし")
                         
                         # 評価値の検証
-                        if not isinstance(good_picture, bool):
-                            logger.error(f"good_pictureの値が不正です: {good_picture}")
-                            raise ValueError(f"good_pictureの値が不正です: {good_picture}")
-                        
                         if not isinstance(rate, int) or rate < 1 or rate > 5:
                             logger.error(f"rateの値が不正です: {rate}")
                             raise ValueError(f"rateの値が不正です: {rate}")
@@ -269,7 +264,8 @@ async def websocket_endpoint(websocket: WebSocket):
                             logger.error(f"reasonの値が不正です: {reason}")
                             raise ValueError(f"reasonの値が不正です: {reason}")
                         
-                        if good_picture:
+                        # 評価値が3以上の場合のみ保存
+                        if rate >= 3:
                             # 良い写真の場合のみ保存
                             # メッセージからホストURLを取得
                             # WebSocketメッセージはdict型であることを確認
@@ -306,10 +302,20 @@ async def websocket_endpoint(websocket: WebSocket):
                             await websocket.send_json({
                                 "type": "evaluation",
                                 "content": {
-                                    "good_picture": good_picture,
                                     "rate": int(rate),  # 数値として送信
                                     "reason": reason,
-                                    "image_url": image_url
+                                    "image_url": image_url,
+                                    "saved": True  # 保存されたことを示すフラグ
+                                }
+                            })
+                        else:
+                            # 評価が低い場合は保存せずに結果のみ送信
+                            await websocket.send_json({
+                                "type": "evaluation",
+                                "content": {
+                                    "rate": int(rate),
+                                    "reason": reason,
+                                    "saved": False
                                 }
                             })
                         
