@@ -140,8 +140,7 @@ async def websocket_endpoint(websocket: WebSocket):
             base64_data = message["image"]
             
             # APIにリクエストを送信
-            prompt = f"""画像に写っているのは現在のユーザーの様子です。楽しい感じでリアクションしてください。
-"""
+            prompt = f"""リアクションしてください"""
 
             # メッセージ送信
             message = HumanMessage(
