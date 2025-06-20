@@ -192,6 +192,12 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             message = json.loads(data)
             
+            # 評価閾値を取得（デフォルトは3）
+            evaluation_threshold = 3
+            if "threshold" in message and isinstance(message["threshold"], int):
+                evaluation_threshold = message["threshold"]
+                logger.info(f"クライアントから評価閾値を受信: {evaluation_threshold}")
+            
             if "image" in message:
                 # Base64データを取得
                 base64_data = message["image"]
@@ -264,8 +270,9 @@ async def websocket_endpoint(websocket: WebSocket):
                             logger.error(f"reasonの値が不正です: {reason}")
                             raise ValueError(f"reasonの値が不正です: {reason}")
                         
-                        # 評価値が3以上の場合のみ保存
-                        if rate >= 3:
+                        # 評価値が閾値以上の場合のみ保存
+                        if rate >= evaluation_threshold:
+                            logger.info(f"評価値 {rate} が閾値 {evaluation_threshold} 以上のため画像を保存します")
                             # 良い写真の場合のみ保存
                             # メッセージからホストURLを取得
                             # WebSocketメッセージはdict型であることを確認

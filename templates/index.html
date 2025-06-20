@@ -122,6 +122,27 @@
     <div class="container mt-4">
         <h1 class="text-center mb-4">写真評価システム</h1>
         
+        <div class="settings-container mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">評価設定</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="threshold-setting">保存する評価閾値：</label>
+                        <select id="threshold-setting" class="form-select">
+                            <option value="1">1点以上</option>
+                            <option value="2">2点以上</option>
+                            <option value="3" selected>3点以上</option>
+                            <option value="4">4点以上</option>
+                            <option value="5">5点のみ</option>
+                        </select>
+                        <small class="form-text text-muted">選択した評価点数以上の写真のみが保存されます</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="camera-container">
             <video id="video" autoplay playsinline></video>
             <canvas id="canvas"></canvas>
